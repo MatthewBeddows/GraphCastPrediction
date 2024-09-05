@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
 import xarray
-from IPython.display import HTML
+#from IPython.display import HTML
 
 # Workaround for cartopy crashes
 import shapely
@@ -51,40 +51,66 @@ def scale(data: xarray.Dataset, center: Optional[float] = None, robust: bool = F
         vmax = center + diff
     return (data, matplotlib.colors.Normalize(vmin, vmax), ("RdBu_r" if center is not None else "viridis"))
 
-def plot_data(data: dict[str, xarray.Dataset], fig_title: str, plot_size: float = 5, robust: bool = False, cols: int = 4) -> tuple[xarray.Dataset, matplotlib.colors.Normalize, str]:
-    first_data = next(iter(data.values()))[0]
-    max_steps = first_data.sizes.get("time", 1)
-    assert all(max_steps == d.sizes.get("time", 1) for d, _, _ in data.values())
+# def plot_data(data: dict[str, xarray.Dataset], fig_title: str, plot_size: float = 5, robust: bool = False, cols: int = 4) -> tuple[xarray.Dataset, matplotlib.colors.Normalize, str]:
+#     first_data = next(iter(data.values()))[0]
+#     max_steps = first_data.sizes.get("time", 1)
+#     assert all(max_steps == d.sizes.get("time", 1) for d, _, _ in data.values())
 
-    cols = min(cols, len(data))
-    rows = math.ceil(len(data) / cols)
-    figure = plt.figure(figsize=(plot_size * 2 * cols, plot_size * rows))
-    figure.suptitle(fig_title, fontsize=16)
-    figure.subplots_adjust(wspace=0, hspace=0)
-    figure.tight_layout()
+#     cols = min(cols, len(data))
+#     rows = math.ceil(len(data) / cols)
+#     figure = plt.figure(figsize=(plot_size * 2 * cols, plot_size * rows))
+#     figure.suptitle(fig_title, fontsize=16)
+#     figure.subplots_adjust(wspace=0, hspace=0)
+#     figure.tight_layout()
 
-    images = []
-    for i, (title, (plot_data, norm, cmap)) in enumerate(data.items()):
-        ax = figure.add_subplot(rows, cols, i+1)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_title(title)
-        im = ax.imshow(plot_data.isel(time=0, missing_dims="ignore"), norm=norm, origin="lower", cmap=cmap)
-        plt.colorbar(mappable=im, ax=ax, orientation="vertical", pad=0.02, aspect=16, shrink=0.75, cmap=cmap, extend=("both" if robust else "neither"))
-        images.append(im)
+#     images = []
+#     for i, (title, (plot_data, norm, cmap)) in enumerate(data.items()):
+#         ax = figure.add_subplot(rows, cols, i+1)
+#         ax.set_xticks([])
+#         ax.set_yticks([])
+#         ax.set_title(title)
+#         im = ax.imshow(plot_data.isel(time=0, missing_dims="ignore"), norm=norm, origin="lower", cmap=cmap)
+#         plt.colorbar(mappable=im, ax=ax, orientation="vertical", pad=0.02, aspect=16, shrink=0.75, cmap=cmap, extend=("both" if robust else "neither"))
+#         images.append(im)
 
-    def update(frame):
-        if "time" in first_data.dims:
-            td = datetime.timedelta(microseconds=first_data["time"][frame].item() / 1000)
-            figure.suptitle(f"{fig_title}, {td}", fontsize=16)
-        else:
-            figure.suptitle(fig_title, fontsize=16)
-        for im, (plot_data, norm, cmap) in zip(images, data.values()):
-            im.set_data(plot_data.isel(time=frame, missing_dims="ignore"))
+#     def update(frame):
+#         if "time" in first_data.dims:
+#             td = datetime.timedelta(microseconds=first_data["time"][frame].item() / 1000)
+#             figure.suptitle(f"{fig_title}, {td}", fontsize=16)
+#         else:
+#             figure.suptitle(fig_title, fontsize=16)
+#         for im, (plot_data, norm, cmap) in zip(images, data.values()):
+#             im.set_data(plot_data.isel(time=frame, missing_dims="ignore"))
 
-    ani = animation.FuncAnimation(fig=figure, func=update, frames=max_steps, interval=250)
-    plt.close(figure.number)
-    return HTML(ani.to_jshtml())
+#     ani = animation.FuncAnimation(fig=figure, func=update, frames=max_steps, interval=250)
+#     plt.close(figure.number)
+#     return HTML(ani.to_jshtml())
+
+def save_data_to_csv(data: dict[str, xarray.Dataset], file_prefix: str = "output_data"):
+    """
+    Save data from xarray.Dataset to CSV files.
+
+    Args:
+    - data (dict[str, xarray.Dataset]): Dictionary of xarray Datasets to save.
+    - file_prefix (str): Prefix for the CSV file names.
+
+    Returns:
+    - None
+    """
+    for title, dataset in data.items():
+        # Flatten the dataset for saving to CSV
+        df = dataset.to_dataframe().reset_index()
+
+        # Generate a filename based on the title
+        filename = f"{file_prefix}_{title.replace(' ', '_')}.csv"
+
+        # Save to CSV
+        df.to_csv(filename, index=False)
+        print(f"Saved {title} data to {filename}")
+
+
+
+
 
 # Load the Data and initialize the model
 params_file = "GraphCast_small - ERA5 1979-2015 - resolution 1.0 - pressure levels 13 - mesh 2to5 - precipitation input and output.npz"
@@ -234,7 +260,8 @@ fig_title = plot_pred_variable
 if "level" in predictions[plot_pred_variable].coords:
     fig_title += f" at {plot_pred_level} hPa"
 
-plot_data(data, fig_title, plot_size, plot_pred_robust)
+#plot_data(data, fig_title, plot_size, plot_pred_robust)
+save_data_to_csv(data, file_prefix="weather_data")
 
 # Loss computation
 loss, diagnostics = loss_fn_jitted(
