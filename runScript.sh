@@ -7,7 +7,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --partition=a100_full
-#SBATCH --nodelist=agpu003
+#SBATCH --nodelist=agpu001
  
 # module load miniconda3
 source /opt/software/uoa/apps/miniconda3/latest/etc/profile.d/conda.sh
