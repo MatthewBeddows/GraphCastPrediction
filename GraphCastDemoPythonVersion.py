@@ -86,27 +86,38 @@ def scale(data: xarray.Dataset, center: Optional[float] = None, robust: bool = F
 #     plt.close(figure.number)
 #     return HTML(ani.to_jshtml())
 
-def save_data_to_csv(data: dict[str, xarray.Dataset], file_prefix: str = "output_data"):
+
+def save_data_to_csv(data: dict[str, tuple], file_prefix: str = "output_data"):
     """
-    Save data from xarray.Dataset to CSV files.
+    Save data from xarray.Dataset or xarray.DataArray contained in tuples to CSV files.
 
     Args:
-    - data (dict[str, xarray.Dataset]): Dictionary of xarray Datasets to save.
+    - data (dict[str, tuple]): Dictionary where each value is a tuple containing xarray Datasets or DataArrays.
     - file_prefix (str): Prefix for the CSV file names.
 
     Returns:
     - None
     """
-    for title, dataset in data.items():
-        # Flatten the dataset for saving to CSV
-        df = dataset.to_dataframe().reset_index()
+    for title, dataset_tuple in data.items():
+        # Handle tuples, assuming they contain xarray.Dataset or xarray.DataArray objects
+        if not isinstance(dataset_tuple, tuple):
+            print(f"Error: {title} is not a tuple. Skipping...")
+            continue
+        
+        for i, dataset in enumerate(dataset_tuple):
+            if hasattr(dataset, 'to_dataframe'):
+                # Flatten the dataset for saving to CSV
+                df = dataset.to_dataframe().reset_index()
 
-        # Generate a filename based on the title
-        filename = f"{file_prefix}_{title.replace(' ', '_')}.csv"
+                # Generate a filename based on the title and index in the tuple
+                filename = f"{file_prefix}_{title.replace(' ', '_')}_{i}.csv"
 
-        # Save to CSV
-        df.to_csv(filename, index=False)
-        print(f"Saved {title} data to {filename}")
+                # Save to CSV
+                df.to_csv(filename, index=False)
+                print(f"Saved {title} data (tuple index {i}) to {filename}")
+            else:
+                print(f"Warning: Object at index {i} in tuple '{title}' is not an xarray object. Skipping...")
+
 
 
 
