@@ -81,7 +81,8 @@ def save_data_to_csv(data: dict[str, tuple], file_prefix: str = "output_data"):
 
 # Load the Data and initialize the model
 params_file = "GraphCast_small - ERA5 1979-2015 - resolution 1.0 - pressure levels 13 - mesh 2to5 - precipitation input and output.npz"
-dataset_file = "source-era5_date-2024-01-01_res-0.25_levels-13_steps-12.nc"
+#dataset_file = "source-era5_date-2024-01-01_res-0.25_levels-13_steps-12.nc"
+dataset_file = "source-era5_date-2022-01-01_res-0.25_levels-13_steps-12"
 
 # Load the model params
 with open(f"../model/params/{params_file}", "rb") as f:
@@ -95,7 +96,7 @@ print("Model description:\n", ckpt.description, "\n")
 print("Model license:\n", ckpt.license, "\n")
 
 # Load the example data
-with open(f"../model/customDataset/{dataset_file}", "rb") as f:
+with open(f"../model/dataset/{dataset_file}", "rb") as f:
     example_batch = xarray.load_dataset(f).compute()
 
 
