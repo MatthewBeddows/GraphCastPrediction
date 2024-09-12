@@ -82,7 +82,7 @@ def save_data_to_csv(data: dict[str, tuple], file_prefix: str = "output_data"):
 # Load the Data and initialize the model
 params_file = "GraphCast_small - ERA5 1979-2015 - resolution 1.0 - pressure levels 13 - mesh 2to5 - precipitation input and output.npz"
 #dataset_file = "source-era5_date-2024-01-01_res-0.25_levels-13_steps-12.nc"
-dataset_file = "source-era5_date-2022-01-01_res-0.25_levels-13_steps-12"
+dataset_file = "source-era5_date-2022-01-01_res-0.25_levels-13_steps-12.nc"
 
 # Load the model params
 with open(f"../model/params/{params_file}", "rb") as f:
