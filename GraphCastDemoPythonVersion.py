@@ -100,7 +100,8 @@ print("Model description:\n", ckpt.description, "\n")
 print("Model license:\n", ckpt.license, "\n")
 
 # Load the example data
-with open(f"../model/dataset/{dataset_file}", "rb") as f:
+#with open(f"../model/dataset/{dataset_file}", "rb") as f:
+with open(f"../model/customDataset/{dataset_file}", "rb") as f:
     example_batch = xarray.load_dataset(f).compute()
 
 
